@@ -5,13 +5,13 @@ from Constants import *
 
 
 def SpawnPlant():
-    position = (random.randint(0, WINDOW_WIDTH-1),
+    position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
                 random.randint(0, WINDOW_HEIGHT-1))
     size = 7
     growth_rate = .2
     seed_range = 15
     personal_space = 2
-    mutation_rate = .5
+    mutation_rate = .2
     max_age = 50
     soil_energy = .2
     solar_energy = .2
@@ -77,13 +77,13 @@ class Plant():
         if draw_position:
             font = pygame.font.Font(None, 12)
             position_text = font.render(
-                f"{self.position[0]}, {self.position[1]}", True, COLOR_RED)
-            window.blit(position_text, (self.position[0], self.position[1]))
+                f"{self.position.x}, {self.position.y}", True, COLOR_RED)
+            window.blit(position_text, (self.position.x, self.position.y))
 
     def has_space(self, other_plants):
         for plant in other_plants:
             distance = math.sqrt(
-                (self.position[0] - plant.position[0])**2 + (self.position[1] - plant.position[1])**2)
+                (self.position.x - plant.position.x)**2 + (self.position.y - plant.position.y)**2)
             if distance < (self.size + plant.size + self.attributes['personal_space']):
                 return False
         return True
@@ -99,11 +99,11 @@ class Plant():
             1, self.attributes['seed_range']) + self.size*2 + self.attributes['personal_space']
         spread_angle = random.uniform(0, 2 * math.pi)
         spread_x = (
-            self.position[0] + int(spread_distance * math.cos(spread_angle))) % WINDOW_WIDTH
-        spread_y = (self.position[1] + int(spread_distance *
+            self.position.x + int(spread_distance * math.cos(spread_angle))) % WINDOW_WIDTH
+        spread_y = (self.position.y + int(spread_distance *
                     math.sin(spread_angle))) % WINDOW_HEIGHT
         mutated_attributes = self.mutate()
-        new_plant = Plant((spread_x, spread_y), pygame.Color(int(255*mutated_attributes["mutation_rate"]), int(
+        new_plant = Plant(pygame.math.Vector2(spread_x, spread_y), pygame.Color(int(255*mutated_attributes["mutation_rate"]), int(
             255*mutated_attributes["growth_rate"]), int(mutated_attributes["seed_range"])), attributes=mutated_attributes)
         return new_plant
 

@@ -34,7 +34,7 @@ soil_object = Soil()
 
 plant_objects = []
 ## Randomly instantiate 1000 plants in the world
-for i in range(100):
+for i in range(500):
     plant_objects.append(SpawnPlant())
 
 creature_objects = []

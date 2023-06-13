@@ -5,7 +5,7 @@ from Constants import *
 
 
 def SpawnCreature():
-    position = (random.randint(0, WINDOW_WIDTH-1),
+    position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
                 random.randint(0, WINDOW_HEIGHT-1))
     size = random.randint(5, 10)
     max_energy = random.randint(150*size, 300*size)
@@ -34,55 +34,61 @@ class Creature():
         self.energy = attributes["max_energy"] / 2
         self.size = attributes["start_size"]
         self.center = (position[0] + self.size/2, position[1] + self.size/2)
-        self.facing_dir = random.uniform(0.0, math.pi*2)
+        self.facing_vector = pygame.math.Vector2( random.random(), random.random()  ).normalize()
         self.sight_length = 30
 
     def rotate(self, theta):
-        self.facing_dir += theta
-        if 0 > self.facing_dir:
-            self.facing_dir += 2*math.pi
-        elif self.facing_dir > 2*math.pi:
-            self.facing_dir -= 2*math.pi
+        self.facing_vector = self.facing_vector.rotate(theta)
 
     def move(self, speed):
         if speed > self.attributes["max_speed"]:
             speed = self.attributes["max_speed"]
-        self.position = (math.cos(self.facing_dir) * speed + self.position[0],
-                         math.sin(self.facing_dir) * speed + self.position[1])
-        self.position = (self.position[0] % WINDOW_WIDTH,
+        self.position = self.facing_vector * speed + self.position
+        self.position = pygame.math.Vector2(self.position[0] % WINDOW_WIDTH,
                          self.position[1] % WINDOW_HEIGHT)
-        self.center = (self.position[0] + self.size/2,
-                       self.position[1] + self.size/2)
+        self.center = pygame.math.Vector2(self.position.x + self.size/2, self.position.y + self.size/2)
         self.energy -= speed * self.size
 
-    def dir_to_closest_food(self, direction, width, length, visible_objects):
-        closest_food = None
-        shortest_dist = math.inf
-        for obj in visible_objects:
-            dist = math.sqrt(
-                (self.center[0] - obj.position[0])**2 + (self.center[1] - obj.position[1])**2)
-            if dist < shortest_dist:
-                closest_food = obj
-                shortest_dist = dist
-        if shortest_dist < length:
-            print(shortest_dist)
-            pygame.draw.line(pygame.display.get_surface(),
-                             COLOR_BLUE, self.center, obj.position)
+    def sight(self, num_sight_lines, deg_spread, length):
+        game_window = pygame.display.get_surface()
+        output = []
+        food_rects = [food.rect for food in self.food]
+        for i in range(num_sight_lines):
+            left_eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + self.facing_vector.rotate(  -i*deg_spread ) * length)
+            right_eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + self.facing_vector.rotate(  i*deg_spread ) * length)
+            seen_food_idx = left_eye_rect.collidelistall(food_rects)
+            nearest_distance = self.get_distance_to_food(seen_food_idx, length)
+            if nearest_distance < length:
+                pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + self.facing_vector.rotate(  -i*deg_spread ) * length)
+            output.append(  1 - nearest_distance / length  )
 
-        delta_x = self.center[0] - closest_food.position[0]
-        delta_y = self.center[1] - closest_food.position[1]
-        if delta_y == 0:
-            return math.copysign() * math.pi / 2
-        if delta_x == 0:
-            return math.copysign(delta_y) * math.pi
-        return math.atan(delta_x/delta_y)
+            if i == 0: ## The right eye line and the left eye line are the same
+                continue
+
+            else:
+                seen_food_idx = right_eye_rect.collidelistall(food_rects)
+                nearest_distance = self.get_distance_to_food(seen_food_idx, length)
+                if nearest_distance < length:
+                    pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + self.facing_vector.rotate(  i*deg_spread ) * length)
+                output.append(  1 - nearest_distance / length  )
+        print(output)
+        return output
+            
+    def get_distance_to_food(self, seen_food_idx, length):
+        nearest_distance = length
+        for idx in seen_food_idx:
+            food = self.food[idx]
+            distance = (food.position - self.center).magnitude()
+            if distance < nearest_distance:
+                nearest_distance = distance
+        return nearest_distance
 
     def update(self, plants, creatures, soil):
         self.food = plants
-        rotation = random.uniform(-.05*math.pi, .05*math.pi)
         speed = random.uniform(0, self.attributes["max_speed"])
-        self.rotate(rotation)
-        # self.facing_dir = self.dir_to_closest_food(self.facing_dir, 5, 30, plants)
+        if self.sight(1, 0, 25) == False:
+            rotation = random.uniform(-45, 45)
+            self.rotate(rotation)
         self.move(self.attributes["max_speed"])
         if self.energy < 0:
             self.die(creatures, soil)
@@ -116,15 +122,17 @@ class Creature():
         return new_creature
 
     def draw(self, window, draw_position=False):
-        rect = pygame.Rect(
+        self.rect = pygame.Rect(
             self.position[0], self.position[1], self.size, self.size)
-        pygame.draw.rect(window, self.color, rect)
+        self.rect = pygame.draw.rect(window, self.color, self.rect)
 
         if draw_position:
             font = pygame.font.Font(None, 12)
             position_text = font.render(
                 f"{self.position[0]}, {self.position[1]}", True, COLOR_RED)
             window.blit(position_text, (self.position[0], self.position[1]))
+
+        self.sight(2, 45, 25)
 
     def mutate(self):
         mutate = random.random() < self.attributes['mutation_rate']
