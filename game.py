@@ -34,12 +34,12 @@ soil_object = Soil()
 
 plant_objects = []
 ## Randomly instantiate 1000 plants in the world
-for i in range(1000):
+for i in range(100):
     plant_objects.append(SpawnPlant())
 
 creature_objects = []
 ## Randomly instantiate 1000 plants in the world
-for i in range(10):
+for i in range(100):
     creature_objects.append(SpawnCreature())
     
 # Game loop
@@ -55,7 +55,7 @@ while running == True:
     for obj in plant_objects:
         obj.update(plant_objects, soil_object)
     for obj in creature_objects:
-        obj.update(plant_objects)
+        obj.update(plant_objects, creature_objects, soil_object)
     
     # Clear the screen
     game_window.fill((100, 200, 100))
@@ -70,12 +70,9 @@ while running == True:
     # Render plant and creature counts
     plant_count_text = font.render(f"Plants: {len(plant_objects)}", True, COLOR_RED)
     game_window.blit(plant_count_text, (10, 10))
-    plant_energy = 0
-    for plant in plant_objects:
-        plant_energy += plant.energy
 
-    plant_count_text = font.render(f"Plant Energy: {round(plant_energy):,}", True, COLOR_RED)
-    game_window.blit(plant_count_text, (10, 24))
+    creature_count_text = font.render(f"Creatures: {len(creature_objects):,}", True, COLOR_RED)
+    game_window.blit(creature_count_text, (10, 24))
     
     
     # Update the display
