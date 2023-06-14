@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import numpy as np
 from Constants import *
 
 
@@ -71,7 +72,8 @@ class Creature():
                 if nearest_distance < length:
                     pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + self.facing_vector.rotate(  i*deg_spread ) * length)
                 output.append(  1 - nearest_distance / length  )
-        print(output)
+        if len(output) != num_sight_lines * 2 - 1:
+            print(f"Sight lines broke there should be {num_sight_lines *2-1} outputs, but only {len(output)} were found")
         return output
             
     def get_distance_to_food(self, seen_food_idx, length):
@@ -86,9 +88,23 @@ class Creature():
     def update(self, plants, creatures, soil):
         self.food = plants
         speed = random.uniform(0, self.attributes["max_speed"])
-        if self.sight(1, 0, 25) == False:
-            rotation = random.uniform(-45, 45)
-            self.rotate(rotation)
+
+        ### Find food with sight lines
+        degree_separation = 35
+        sight_length = 45
+        num_sight_lines = 3 ## it's actually 3 per eye and one overlaps...
+        sight_lines = self.sight(num_sight_lines, degree_separation, sight_length)
+        if np.max(sight_lines) > 0:
+            best_idx = np.argmax(sight_lines)
+            if best_idx % 2 == 0:
+                rotation = best_idx * degree_separation
+            else:
+                rotation = - best_idx * degree_separation
+        else:
+            rotation = random.randrange(-45,45)
+            
+
+        self.rotate(rotation)
         self.move(self.attributes["max_speed"])
         if self.energy < 0:
             self.die(creatures, soil)
