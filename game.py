@@ -33,13 +33,13 @@ clock = pygame.time.Clock()
 soil_object = Soil()
 
 plant_objects = []
-## Randomly instantiate 1000 plants in the world
-for i in range(500):
+## Randomly instantiate plants in the world
+for i in range(PLANT_COUNT):
     plant_objects.append(SpawnPlant())
 
 creature_objects = []
-## Randomly instantiate 1000 plants in the world
-for i in range(100):
+## Randomly instantiate creatures in the world
+for i in range(CREATURE_COUNT):
     creature_objects.append(SpawnCreature())
     
 # Game loop
@@ -51,35 +51,29 @@ while running == True:
         elif event.type == pygame.K_ESCAPE:
             running = False
     
-    # Update the state of the plants
-    for obj in plant_objects:
-        obj.update(plant_objects, soil_object)
-    for obj in creature_objects:
-        obj.update(plant_objects, creature_objects, soil_object)
-    
     # Clear the screen
     game_window.fill((100, 200, 100))
     
     soil_object.draw(game_window)
-    # Draw the plants on the screen
+
+    # Update the state of the plants
     for plant in plant_objects:
+        plant.update(plant_objects, soil_object)
         plant.draw(game_window)
     for creature in creature_objects:
+        creature.update(plant_objects, creature_objects, soil_object)
         creature.draw(game_window)
-
+    
     # Render plant and creature counts
-    plant_count_text = font.render(f"Plants: {len(plant_objects)}", True, COLOR_RED)
+    plant_count_text = font.render(f"Plants: {len(plant_objects)}", False, COLOR_RED)
     game_window.blit(plant_count_text, (10, 10))
 
-    creature_count_text = font.render(f"Creatures: {len(creature_objects):,}", True, COLOR_RED)
+    creature_count_text = font.render(f"Creatures: {len(creature_objects):,}", False, COLOR_RED)
     game_window.blit(creature_count_text, (10, 24))
     
     
     # Update the display
     pygame.display.flip()
     
-    # Control the frame rate
-    # clock.tick(1000)
-
 # Quit Pygame
 pygame.quit()

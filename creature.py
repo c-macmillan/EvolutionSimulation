@@ -8,7 +8,7 @@ from Constants import *
 def SpawnCreature():
     position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
                 random.randint(0, WINDOW_HEIGHT-1))
-    size = random.randint(5, 10)
+    size = random.randint(*SIZE_MIN_MAX)
     max_energy = random.randint(150*size, 300*size)
     max_speed = random.random() + .1
     mutation_rate = random.uniform(0.1, 0.5)
@@ -36,7 +36,9 @@ class Creature():
         self.size = attributes["start_size"]
         self.center = (position[0] + self.size/2, position[1] + self.size/2)
         self.facing_vector = pygame.math.Vector2( random.random(), random.random()  ).normalize()
-        self.sight_length = 30
+        self.sight_length = SIGHT_LENGTH 
+        self.deg_spread = DEGREE_SPREAD
+        self.num_sight_lines = NUM_SIGHT_LINES
 
     def rotate(self, theta):
         self.facing_vector = self.facing_vector.rotate(theta)
@@ -50,30 +52,30 @@ class Creature():
         self.center = pygame.math.Vector2(self.position.x + self.size/2, self.position.y + self.size/2)
         self.energy -= speed * self.size
 
-    def sight(self, num_sight_lines, deg_spread, length):
+    def sight(self):
         game_window = pygame.display.get_surface()
         output = []
         food_rects = [food.rect for food in self.food]
-        for i in range(num_sight_lines):
-            left_eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + self.facing_vector.rotate(  -i*deg_spread ) * length)
-            right_eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + self.facing_vector.rotate(  i*deg_spread ) * length)
+        for i in range(self.num_sight_lines):
+            left_eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + self.facing_vector.rotate(  -i*self.deg_spread ) * self.sight_length)
+            right_eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + self.facing_vector.rotate(  i*self.deg_spread ) * self.sight_length)
             seen_food_idx = left_eye_rect.collidelistall(food_rects)
-            nearest_distance = self.get_distance_to_food(seen_food_idx, length)
-            if nearest_distance < length:
-                pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + self.facing_vector.rotate(  -i*deg_spread ) * length)
-            output.append(  1 - nearest_distance / length  )
+            nearest_distance = self.get_distance_to_food(seen_food_idx, self.sight_length)
+            if nearest_distance < self.sight_length:
+                pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + self.facing_vector.rotate(  -i*self.deg_spread ) * self.sight_length)
+            output.append(  1 - nearest_distance / self.sight_length  )
 
             if i == 0: ## The right eye line and the left eye line are the same
                 continue
 
             else:
                 seen_food_idx = right_eye_rect.collidelistall(food_rects)
-                nearest_distance = self.get_distance_to_food(seen_food_idx, length)
-                if nearest_distance < length:
-                    pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + self.facing_vector.rotate(  i*deg_spread ) * length)
-                output.append(  1 - nearest_distance / length  )
-        if len(output) != num_sight_lines * 2 - 1:
-            print(f"Sight lines broke there should be {num_sight_lines *2-1} outputs, but only {len(output)} were found")
+                nearest_distance = self.get_distance_to_food(seen_food_idx, self.sight_length)
+                if nearest_distance < self.sight_length:
+                    pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + self.facing_vector.rotate(  i*self.deg_spread ) * self.sight_length)
+                output.append(  1 - nearest_distance / self.sight_length  )
+        if len(output) != self.num_sight_lines * 2 - 1:
+            print(f"Sight lines broke there should be {self.num_sight_lines *2-1} outputs, but only {len(output)} were found")
         return output
             
     def get_distance_to_food(self, seen_food_idx, length):
@@ -90,10 +92,8 @@ class Creature():
         speed = random.uniform(0, self.attributes["max_speed"])
 
         ### Find food with sight lines
-        degree_separation = 35
-        sight_length = 45
-        num_sight_lines = 3 ## it's actually 3 per eye and one overlaps...
-        sight_lines = self.sight(num_sight_lines, degree_separation, sight_length)
+        degree_separation = 0
+        sight_lines = self.sight()
         if np.max(sight_lines) > 0:
             best_idx = np.argmax(sight_lines)
             if best_idx % 2 == 0:
@@ -147,8 +147,7 @@ class Creature():
             position_text = font.render(
                 f"{self.position[0]}, {self.position[1]}", True, COLOR_RED)
             window.blit(position_text, (self.position[0], self.position[1]))
-
-        self.sight(2, 45, 25)
+        # self.sight()
 
     def mutate(self):
         mutate = random.random() < self.attributes['mutation_rate']

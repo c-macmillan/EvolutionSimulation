@@ -13,3 +13,13 @@ COLOR_RED = pygame.Color(255, 0, 0)
 COLOR_GREEN = pygame.Color(0, 255, 0)
 COLOR_BLUE = pygame.Color(0, 0, 255)
 
+# simulation parameters
+CREATURE_COUNT = 50
+PLANT_COUNT = 100
+
+
+# creature attributes
+SIGHT_LENGTH = 100
+SIZE_MIN_MAX = (5, 10)
+DEGREE_SPREAD = 15
+NUM_SIGHT_LINES = 3
