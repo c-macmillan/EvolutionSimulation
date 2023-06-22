@@ -88,24 +88,22 @@ class Creature():
         return nearest_distance
 
     def update(self, plants, creatures, soil):
+        brain_input = []
         self.food = plants
         speed = random.uniform(0, self.attributes["max_speed"])
 
         ### Find food with sight lines
-        degree_separation = 0
         sight_lines = self.sight()
-        if np.max(sight_lines) > 0:
-            best_idx = np.argmax(sight_lines)
-            if best_idx % 2 == 0:
-                rotation = best_idx * degree_separation
-            else:
-                rotation = - best_idx * degree_separation
-        else:
-            rotation = random.randrange(-45,45)
-            
-
-        self.rotate(rotation)
-        self.move(self.attributes["max_speed"])
+        # degree_separation = 0
+        # if np.max(sight_lines) > 0:
+        #     best_idx = np.argmax(sight_lines)
+        #     if best_idx % 2 == 0:
+        #         rotation = best_idx * degree_separation
+        #     else:
+        #         rotation = - best_idx * degree_separation
+        # else:
+        #     rotation = random.randrange(-45,45)
+        is_eating = 0
         if self.energy < 0:
             self.die(creatures, soil)
         elif self.energy >= self.attributes["max_energy"]:
@@ -123,8 +121,16 @@ class Creature():
                     self.attributes["plant_efficiency"] * self.size * 5 / (1+speed))
                 plant.size -= self.attributes["plant_efficiency"] / (1+speed)
                 self.color = COLOR_WHITE
+                is_eating = True
                 break
+        brain_input.extend(sight_lines)
+        brain_input.append(float(is_eating))
+        percent_energy = self.energy / self.attributes['max_energy']
+        brain_input.append(percent_energy)
+        rotation, move_speed = self.brain(brain_input)
 
+        self.rotate(rotation)
+        self.move(min(self.attributes["max_speed"], move_speed))
     def reproduce(self):
         spawn_distance = random.uniform(1, 5) + self.size*2
         spawn_angle = random.uniform(0, 2 * math.pi)
