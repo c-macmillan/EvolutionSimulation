@@ -7,74 +7,37 @@ from Constants import *
 def SpawnPlant():
     position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
                 random.randint(0, WINDOW_HEIGHT-1))
-    size = 7
-    growth_rate = .2
+    size = 2
+    reproduction_age = 250
+    start_age = random.randint(0, reproduction_age)
     seed_range = 15
     personal_space = 2
-    mutation_rate = .2
-    max_age = 50
-    soil_energy = .2
-    solar_energy = .2
-    max_energy = 5000
     plant_attributes = {
         "start_size": size,
-        "growth_rate": growth_rate,
         "seed_range": seed_range,
-        "mutation_rate": mutation_rate,
         "personal_space": personal_space,
-        "max_age": max_age,
-        "soil_energy": soil_energy,
-        "solar_energy": solar_energy,
-        "max_energy": max_energy
+        "reproduction_age" : reproduction_age
     }
-    starting_energy = random.uniform(0, max_energy/2)
-    return Plant(position=position, color=pygame.Color(int(255*mutation_rate), int(255*growth_rate), int(seed_range)), attributes=plant_attributes, starting_energy=starting_energy)
+    return Plant(position=position, color=COLOR_GREEN, attributes=plant_attributes, start_age=start_age)
 
 
 class Plant():
-    def __init__(self, position, color, attributes, starting_energy=500):
+    def __init__(self, position, color, attributes, start_age=0):
         self.attributes = attributes
         self.position = position
         self.color = color
         self.size = self.attributes['start_size']
-        self.age = 0
-        self.energy = starting_energy
+        self.age = start_age
         self.rect = pygame.draw.circle(
             pygame.display.get_surface(), self.color, self.position, self.size)
 
-    def update(self, plant_objects, soil):
-
-        if self.energy <= 0: 
-            self.die(plant_objects, soil=soil)
-            return
-
-        # Gain energy
-        gathered_energy = (soil.absorb_energy(position=self.position,  desired_energy=self.size * self.attributes["soil_energy"]) +
-                           self.size * self.attributes["solar_energy"])
-
-        # The plant didn't get enough energy, so bring it closer to death
-        if gathered_energy < self.size * self.attributes["growth_rate"]:
-            self.age += 1
-        if self.age > self.attributes["max_age"]:
-            self.die(plant_objects, soil=soil)
-            return
-
-        self.energy += gathered_energy
-        if self.size < 1:
-            self.die(plant_objects, soil)
-            return
-
-        # If there is enough energy, either grow or spread seeds
-        if self.energy > self.attributes["max_energy"]:
-            self.age += 1
-            self.energy /= 2
-            if random.random() > self.attributes['growth_rate']:
-                new_plant = self.spread_seed()
-                if new_plant.has_space(plant_objects):
-                    plant_objects.append(new_plant)
-
-            else:
-                self.size += self.attributes['growth_rate']
+    def update(self, plant_objects):
+        # If eough time has passed
+        if self.age > self.attributes['reproduction_age']:
+            self.age = 0
+            new_plant = self.spread_seed()
+            if new_plant.has_space(plant_objects):
+                plant_objects.append(new_plant)
 
     def draw(self, window, draw_position=False):
         self.rect = pygame.draw.circle(
@@ -93,9 +56,7 @@ class Plant():
                 return False
         return True
 
-    def die(self, plant_objects, soil):
-        soil.give_energy(position=self.position,
-                         provided_energy=self.energy * self.size + self.size * self.age)
+    def die(self, plant_objects):
         plant_objects.remove(self)
 
     def spread_seed(self):
@@ -107,32 +68,5 @@ class Plant():
             self.position.x + int(spread_distance * math.cos(spread_angle))) % WINDOW_WIDTH
         spread_y = (self.position.y + int(spread_distance *
                     math.sin(spread_angle))) % WINDOW_HEIGHT
-        mutated_attributes = self.mutate()
-        new_plant = Plant(pygame.math.Vector2(spread_x, spread_y), pygame.Color(int(255*mutated_attributes["mutation_rate"]), int(
-            255*mutated_attributes["growth_rate"]), int(mutated_attributes["seed_range"])), attributes=mutated_attributes)
+        new_plant = Plant(pygame.math.Vector2(spread_x, spread_y), COLOR_GREEN, attributes=self.attributes)
         return new_plant
-
-    def lose_energy(self, energy):
-        lost_energy = min(energy, self.energy)
-        self.energy -= lost_energy
-        return lost_energy
-
-    def mutate(self):
-        mutate = random.random() < self.attributes['mutation_rate']
-        attributes = self.attributes.copy()
-        if mutate:
-            attr_idx = random.randint(0, len(self.attributes))
-            for i, attr in enumerate(self.attributes):
-                if i != attr_idx:
-                    continue
-                else:
-                    attributes[attr] = random.gauss(
-                        0, attributes['mutation_rate']/10) * attributes[attr] + attributes[attr]
-
-        attributes['growth_rate'] = min(attributes['growth_rate'], 0.9)
-        attributes['mutation_rate'] = min(attributes['mutation_rate'], .5)
-        attributes['solar_energy'] = min(attributes['solar_energy'], .3)
-        attributes['soil_energy'] = min(attributes['soil_energy'], .5)
-        attributes['personal_space'] = max(attributes['personal_space'], 0)
-
-        return attributes

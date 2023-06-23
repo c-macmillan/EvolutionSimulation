@@ -65,7 +65,7 @@ while running == True:
 
     # Update the state of the plants
     for plant in plant_objects:
-        plant.update(plant_objects, soil_object)
+        plant.update(plant_objects)
         plant.draw(game_window)
 
     for creature in creature_objects:
