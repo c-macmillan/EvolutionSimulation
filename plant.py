@@ -11,7 +11,7 @@ def SpawnPlant(position = None):
         position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
                 random.randint(0, WINDOW_HEIGHT-1))
     size = 7
-    reproduction_age = 150
+    reproduction_age = PLANT_REPRODUCTION_AGE
     start_age = random.randint(0, reproduction_age)
     seed_range = 15
     personal_space = 2

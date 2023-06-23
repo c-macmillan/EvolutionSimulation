@@ -121,7 +121,7 @@ class Creature():
             creatures.append(self.reproduce())
             self.energy /= 2
         self.color = COLOR_BLACK
-        is_eating = self.check_plant_collision(plants) 
+        is_eating = self.check_plant_collision(plants)
         brain_input.extend(sight_lines)
         rotation, move_speed = self.brain(brain_input)
 
