@@ -48,7 +48,7 @@ class Brain(nn.Module):
 
         return theta, speed 
     
-    def mutate(self, mutation_rate=0.01, mutation_scale=0.1):
+    def mutate(self, mutation_rate=.05, mutation_scale=0.1):
         with torch.no_grad():  # We don't want these operations to be tracked by autograd
             for param in self.parameters():
                 mutation_tensor = torch.randn_like(param)  # Tensor of random numbers with the same shape as param

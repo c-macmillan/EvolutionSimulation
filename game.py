@@ -3,7 +3,7 @@ import pygame
 import time
 import random
 from plant import Plant, SpawnPlant
-from creature import Creature, SpawnCreature
+from creature import Creature, spawn_creature 
 from soil import Soil
 from Constants import *
 
@@ -42,7 +42,7 @@ for i in range(PLANT_COUNT):
 creature_objects = []
 ## Randomly instantiate creatures in the world
 for i in range(CREATURE_COUNT):
-    creature_objects.append(SpawnCreature())
+    creature_objects.append(spawn_creature())
     
 # Game loop
 running = True
@@ -56,7 +56,7 @@ while running == True:
     if len(creature_objects) > CREATURE_LIMIT:
         creature_objects = creature_objects[-CREATURE_LIMIT:] 
     for creature in creature_objects:
-        creature.update(plant_objects, creature_objects, soil_object)
+        creature.update(plant_objects, creature_objects)
 
     # Clear the screen
     game_window.fill((100, 200, 100))
@@ -68,9 +68,15 @@ while running == True:
         plant.update(plant_objects)
         plant.draw(game_window)
 
+    max_food_eaten = 0
     for creature in creature_objects:
+        if creature.num_food_eaten > max_food_eaten:
+            max_food_eaten = creature.num_food_eaten
+            creature.color = COLOR_RED
+        else:
+            creature.color = COLOR_BLACK
         creature.draw(game_window)
-    
+
     # Render plant and creature counts
     plant_count_text = font.render(f"Plants: {len(plant_objects)}", False, COLOR_RED)
     game_window.blit(plant_count_text, (10, 10))
@@ -78,6 +84,8 @@ while running == True:
     creature_count_text = font.render(f"Creatures: {len(creature_objects):,}", False, COLOR_RED)
     game_window.blit(creature_count_text, (10, 24))
     
+    creature_count_text = font.render(f"Best Eater: {max_food_eaten}", False, COLOR_RED)
+    game_window.blit(creature_count_text, (10, 36))
     
     # Update the display
     pygame.display.flip()
