@@ -14,8 +14,9 @@ COLOR_GREEN = pygame.Color(0, 255, 0)
 COLOR_BLUE = pygame.Color(0, 0, 255)
 
 # simulation parameters
-CREATURE_COUNT = 50
-PLANT_COUNT = 100
+CREATURE_COUNT = 100
+CREATURE_LIMIT = 1000
+PLANT_COUNT = 1000
 
 
 # creature attributes

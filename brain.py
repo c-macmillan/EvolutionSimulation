@@ -8,8 +8,11 @@ class Brain(nn.Module):
     def __init__(self, 
                  input_dim: int=7,
                  hidden_dim: int=10,
-                 output_dim: int=2
+                 output_dim: int=2,
+                 parent_weights = None
                  ) -> None:
+
+        super().__init__()
         
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
@@ -19,15 +22,18 @@ class Brain(nn.Module):
         self.fc1 = nn.Linear(self.input_dim, self.hidden_dim)  # Input layer
         self.fc2 = nn.Linear(self.hidden_dim, self.output_dim)  # Output layer
         self.activation = nn.Sigmoid()  # Activation function
+
+        if parent_weights:
+            self.load_state_dict(parent_weights)
+            self.mutate()
+
     
     # input: left, right, center, vision, currently eating (binary)
     #        %energy remaining
     # output: direction to move (theta), speed  
     def forward(self, 
-                vision: List[float],
-                eating: float,
-                energy_remaining: float):
-        inputs = torch.tensor([*vision, eating, energy_remaining], dtype=torch.float32)  
+                inputs):
+        inputs = torch.tensor(inputs, dtype=torch.float32)  
         hidden = self.fc1(inputs)
         activated_hidden = self.activation(hidden)
         output = self.fc2(activated_hidden)
@@ -41,3 +47,10 @@ class Brain(nn.Module):
         speed = torch.sigmoid(output[1])
 
         return theta, speed 
+    
+    def mutate(self, mutation_rate=0.01, mutation_scale=0.1):
+        with torch.no_grad():  # We don't want these operations to be tracked by autograd
+            for param in self.parameters():
+                mutation_tensor = torch.randn_like(param)  # Tensor of random numbers with the same shape as param
+                mutation_mask = torch.rand_like(param) < mutation_rate  # Tensor of booleans indicating which weights to mutate
+                param.add_(mutation_mask * mutation_tensor * mutation_scale)  # Add scaled random changes to the selected weights

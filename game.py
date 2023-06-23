@@ -7,6 +7,8 @@ from creature import Creature, SpawnCreature
 from soil import Soil
 from Constants import *
 
+random.seed(123)
+
 # Window size
 window_x = WINDOW_WIDTH
 window_y = WINDOW_HEIGHT
@@ -50,7 +52,12 @@ while running == True:
             running = False
         elif event.type == pygame.K_ESCAPE:
             running = False
-    
+
+    if len(creature_objects) > CREATURE_LIMIT:
+        creature_objects = creature_objects[-CREATURE_LIMIT:] 
+    for creature in creature_objects:
+        creature.update(plant_objects, creature_objects, soil_object)
+
     # Clear the screen
     game_window.fill((100, 200, 100))
     
@@ -60,8 +67,8 @@ while running == True:
     for plant in plant_objects:
         plant.update(plant_objects, soil_object)
         plant.draw(game_window)
+
     for creature in creature_objects:
-        creature.update(plant_objects, creature_objects, soil_object)
         creature.draw(game_window)
     
     # Render plant and creature counts

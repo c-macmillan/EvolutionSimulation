@@ -15,7 +15,7 @@ def SpawnPlant():
     max_age = 50
     soil_energy = .2
     solar_energy = .2
-    max_energy = 75 * size
+    max_energy = 5000
     plant_attributes = {
         "start_size": size,
         "growth_rate": growth_rate,
@@ -32,7 +32,7 @@ def SpawnPlant():
 
 
 class Plant():
-    def __init__(self, position, color, attributes, starting_energy=0):
+    def __init__(self, position, color, attributes, starting_energy=500):
         self.attributes = attributes
         self.position = position
         self.color = color
@@ -43,6 +43,11 @@ class Plant():
             pygame.display.get_surface(), self.color, self.position, self.size)
 
     def update(self, plant_objects, soil):
+
+        if self.energy <= 0: 
+            self.die(plant_objects, soil=soil)
+            return
+
         # Gain energy
         gathered_energy = (soil.absorb_energy(position=self.position,  desired_energy=self.size * self.attributes["soil_energy"]) +
                            self.size * self.attributes["solar_energy"])
