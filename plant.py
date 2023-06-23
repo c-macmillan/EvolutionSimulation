@@ -4,11 +4,14 @@ import math
 from Constants import *
 
 
-def SpawnPlant():
-    position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
+def SpawnPlant(position = None):
+    if position:
+        position = pygame.math.Vector2(position)
+    else: 
+        position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
                 random.randint(0, WINDOW_HEIGHT-1))
-    size = 2
-    reproduction_age = 250
+    size = 7
+    reproduction_age = 150
     start_age = random.randint(0, reproduction_age)
     seed_range = 15
     personal_space = 2
@@ -33,6 +36,7 @@ class Plant():
 
     def update(self, plant_objects):
         # If eough time has passed
+        self.age += 1
         if self.age > self.attributes['reproduction_age']:
             self.age = 0
             new_plant = self.spread_seed()

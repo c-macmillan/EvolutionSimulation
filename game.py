@@ -43,7 +43,11 @@ creature_objects = []
 ## Randomly instantiate creatures in the world
 for i in range(CREATURE_COUNT):
     creature_objects.append(spawn_creature())
-    
+
+## Save the best creature to see if it actually learned anything
+best_creature = None
+most_eaten_ever = 0
+
 # Game loop
 running = True
 while running == True:
@@ -52,6 +56,12 @@ while running == True:
             running = False
         elif event.type == pygame.K_ESCAPE:
             running = False
+        elif event.type ==  pygame.MOUSEWHEEL:
+            print("create plant")
+            plant_objects.append(Creature(pygame.mouse.get_pos(), parent_weights= best_creature.brain.state_dict() if best_creature else None))
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            creature_objects.append(spawn_creature(pygame.mouse.get_pos()))
+        
 
     if len(creature_objects) > CREATURE_LIMIT:
         creature_objects = creature_objects[-CREATURE_LIMIT:] 
@@ -73,6 +83,9 @@ while running == True:
         if creature.num_food_eaten > max_food_eaten:
             max_food_eaten = creature.num_food_eaten
             creature.color = COLOR_RED
+            if max_food_eaten > most_eaten_ever:
+                most_eaten_ever = max_food_eaten
+                best_creature = creature
         else:
             creature.color = COLOR_BLACK
         creature.draw(game_window)
@@ -84,8 +97,16 @@ while running == True:
     creature_count_text = font.render(f"Creatures: {len(creature_objects):,}", False, COLOR_RED)
     game_window.blit(creature_count_text, (10, 24))
     
-    creature_count_text = font.render(f"Best Eater: {max_food_eaten}", False, COLOR_RED)
-    game_window.blit(creature_count_text, (10, 36))
+    best_current_eater = font.render(f"Best Eater: {max_food_eaten}", False, COLOR_RED)
+    game_window.blit(best_current_eater, (10, 36))
+
+    best_current_eater = font.render(f"Best Eater Ever: {most_eaten_ever}", False, COLOR_RED)
+    game_window.blit(best_current_eater, (10, 48))
+
+    best_current_eater = font.render(f"FPS: {clock.get_fps()}", False, COLOR_RED)
+    game_window.blit(best_current_eater, (10, 60))
+    clock.tick(100)
+
     
     # Update the display
     pygame.display.flip()

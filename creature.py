@@ -6,8 +6,11 @@ from Constants import *
 from brain import Brain
 
 
-def spawn_creature():
-    position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
+def spawn_creature(position = None):
+    if position:
+        position = pygame.math.Vector2(position)
+    else:
+        position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
                 random.randint(0, WINDOW_HEIGHT-1))
 
     return Creature(position=position)
@@ -29,9 +32,9 @@ class Creature():
         
         # initialize neural network
         if parent_weights:
-            self.brain = Brain(parent_weights=parent_weights)
+            self.brain = Brain(input_dim=NUM_SIGHT_LINES*2-1, parent_weights=parent_weights)
         else:
-            self.brain = Brain()
+            self.brain = Brain(input_dim=NUM_SIGHT_LINES*2-1)
 
         self.color = COLOR_BLACK
 
@@ -90,10 +93,9 @@ class Creature():
         self.food = plants
 
         sight_lines = self.sight()
-        is_eating = 0
         if self.energy <= 0:
             self.die(creatures)
-        elif self.energy >= MAX_ENERGY:
+        elif self.energy >= MAX_ENERGY and self.num_food_eaten % 3==0:
             creatures.append(self.reproduce())
             self.energy /= 2
         self.color = COLOR_BLACK
@@ -108,13 +110,9 @@ class Creature():
                 energy_boost = 100
                 self.energy += energy_boost 
                 self.color = COLOR_WHITE
-                is_eating = True
                 self.num_food_eaten += 1
                 break
         brain_input.extend(sight_lines)
-        brain_input.append(float(is_eating))
-        percent_energy = self.energy / MAX_ENERGY 
-        brain_input.append(percent_energy)
         rotation, move_speed = self.brain(brain_input)
 
         self.rotate(rotation)
