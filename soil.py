@@ -32,12 +32,3 @@ class Soil():
             rect = pygame.Rect(pos[0] * cell_size, pos[1]
                                * cell_size, cell_size, cell_size)
             pygame.draw.rect(screen, pygame.Color((139, 69, 19, 0)), rect)
-            total_energy += energy
-            if draw_energy:
-
-                soil_energy = font.render(f"{round(energy)}", True, COLOR_RED)
-                screen.blit(soil_energy, (pos[0]*cell_size, pos[1]*cell_size))
-                position_text = font.render(
-                    f"{pos[0]}, {pos[1]}", True, COLOR_BLACK)
-                screen.blit(position_text,
-                            (pos[0]*cell_size, pos[1]*cell_size + 16))

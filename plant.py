@@ -33,6 +33,8 @@ class Plant():
         self.age = start_age
         self.rect = pygame.draw.circle(
             pygame.display.get_surface(), self.color, self.position, self.size)
+        self.bbox = [self.position[0] - self.size, self.position[1] - self.size, 
+                     self.position[0] + self.size, self.position[1] + self.size]
 
     def update(self, plant_objects):
         # If eough time has passed

@@ -4,10 +4,13 @@ import time
 import random
 from plant import Plant, SpawnPlant
 from creature import Creature, spawn_creature 
-from soil import Soil
 from Constants import *
+import cProfile
 
 random.seed(123)
+
+profiler = cProfile.Profile()
+profiler.enable()
 
 # Window size
 window_x = WINDOW_WIDTH
@@ -25,14 +28,11 @@ pygame.init()
 font = pygame.font.Font(None, 24)
 
 # Initialise game window
-pygame.display.set_caption('Plant Sim')
+pygame.display.set_caption('Evolution Simulation')
 game_window = pygame.display.set_mode((window_x, window_y))
 
 # Game clock controller
 clock = pygame.time.Clock()
-
-## Create the Soil
-soil_object = Soil()
 
 plant_objects = []
 ## Randomly instantiate plants in the world
@@ -69,10 +69,8 @@ while running == True:
         creature.update(plant_objects, creature_objects)
 
     # Clear the screen
-    game_window.fill((100, 200, 100))
+    game_window.fill(COLOR_BROWN)
     
-    soil_object.draw(game_window)
-
     # Update the state of the plants
     for plant in plant_objects:
         plant.update(plant_objects)
@@ -112,4 +110,6 @@ while running == True:
     pygame.display.flip()
     
 # Quit Pygame
+profiler.disable()
+profiler.print_stats(sort='cumulative')
 pygame.quit()

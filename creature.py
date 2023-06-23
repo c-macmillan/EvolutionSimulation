@@ -51,28 +51,30 @@ class Creature():
 
     def sight(self):
         game_window = pygame.display.get_surface()
-        output = []
+        output = np.zeros(NUM_SIGHT_LINES * 2 - 1, dtype=float)
         food_rects = [food.rect for food in self.food]
-        for i in range(NUM_SIGHT_LINES):
-            left_eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + self.facing_vector.rotate(  -i*DEGREE_SPREAD ) * SIGHT_LENGTH)
-            right_eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + self.facing_vector.rotate(  i*DEGREE_SPREAD) * SIGHT_LENGTH)
-            seen_food_idx = left_eye_rect.collidelistall(food_rects)
+
+        # Pre-calculate rotation angles
+        rotation_angles = np.arange(-NUM_SIGHT_LINES + 1, NUM_SIGHT_LINES) * DEGREE_SPREAD
+
+        # Create a matrix of facing vectors rotated by the angles
+        rotated_vectors = np.array([self.facing_vector.rotate(angle) for angle in rotation_angles]) * SIGHT_LENGTH
+
+        # Start the drawing and collision checks
+        for i in range(len(rotation_angles)):
+            rotated_vector = rotated_vectors[i]
+            eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + rotated_vector)
+            seen_food_idx = eye_rect.collidelistall(food_rects)
             nearest_distance = self.get_distance_to_food(seen_food_idx, SIGHT_LENGTH)
+
             if nearest_distance < SIGHT_LENGTH: 
-                pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + self.facing_vector.rotate(  -i*DEGREE_SPREAD) * SIGHT_LENGTH)
-            output.append(  1 - nearest_distance / SIGHT_LENGTH  )
+                pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + rotated_vector)
 
-            if i == 0: ## The right eye line and the left eye line are the same
-                continue
+            output[i] = 1 - nearest_distance / SIGHT_LENGTH
 
-            else:
-                seen_food_idx = right_eye_rect.collidelistall(food_rects)
-                nearest_distance = self.get_distance_to_food(seen_food_idx, SIGHT_LENGTH)
-                if nearest_distance < SIGHT_LENGTH:
-                    pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + self.facing_vector.rotate(  i*DEGREE_SPREAD ) * SIGHT_LENGTH )
-                output.append(  1 - nearest_distance / SIGHT_LENGTH )
         if len(output) != NUM_SIGHT_LINES * 2 - 1:
             print(f"Sight lines broke there should be {NUM_SIGHT_LINES *2-1} outputs, but only {len(output)} were found")
+
         return output
             
     def get_distance_to_food(self, seen_food_idx, length):
@@ -83,22 +85,10 @@ class Creature():
             if distance < nearest_distance:
                 nearest_distance = distance
         return nearest_distance
+    
 
-    def update(self, plants, creatures):
-        self.age += 1
-        self.energy -= .5
-
-        # die if too old
-        brain_input = []
-        self.food = plants
-
-        sight_lines = self.sight()
-        if self.energy <= 0:
-            self.die(creatures)
-        elif self.energy >= MAX_ENERGY and self.num_food_eaten % 3==0:
-            creatures.append(self.reproduce())
-            self.energy /= 2
-        self.color = COLOR_BLACK
+    def check_plant_collision(self, plants):
+        is_eating = False
         for plant in plants:
             plant_left_x = plant.position[0]-self.size
             plant_right_x = plant.position[0]+self.size
@@ -112,6 +102,26 @@ class Creature():
                 self.color = COLOR_WHITE
                 self.num_food_eaten += 1
                 break
+
+        return is_eating
+
+
+    def update(self, plants, creatures):
+        self.age += 1
+        self.energy -= .5
+
+        # die if too old
+        brain_input = []
+        self.food = plants
+
+        sight_lines = self.sight()
+        if self.energy <= 0:
+            self.die(creatures)
+        elif self.energy >= MAX_ENERGY:
+            creatures.append(self.reproduce())
+            self.energy /= 2
+        self.color = COLOR_BLACK
+        is_eating = self.check_plant_collision(plants) 
         brain_input.extend(sight_lines)
         rotation, move_speed = self.brain(brain_input)
 
@@ -144,7 +154,7 @@ class Creature():
             position_text = font.render(
                 f"{self.position[0]}, {self.position[1]}", True, COLOR_RED)
             window.blit(position_text, (self.position[0], self.position[1]))
-        # self.sight()
+        self.sight()
 
     def die(self, creature_objects):
         creature_objects.remove(self)
