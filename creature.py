@@ -126,7 +126,7 @@ class Creature():
         rotation, move_speed = self.brain(brain_input)
 
         self.rotate(rotation)
-        self.move(min(MAX_ENERGY, move_speed))
+        self.move(max(0, move_speed * MAX_SPEED))
 
     def reproduce(self):
         spawn_distance = random.uniform(1, 5) + self.size*2
