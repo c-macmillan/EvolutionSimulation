@@ -58,9 +58,10 @@ while running == True:
             running = False
         elif event.type ==  pygame.MOUSEWHEEL:
             print("create plant")
-            plant_objects.append(Creature(pygame.mouse.get_pos(), parent_weights= best_creature.brain.state_dict() if best_creature else None))
+            plant_objects.append(SpawnPlant(pygame.mouse.get_pos()))
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            creature_objects.append(spawn_creature(pygame.mouse.get_pos()))
+            creature_objects.append(Creature(pygame.mouse.get_pos(), parent_weights= best_creature.brain.state_dict() if best_creature else None))
+            most_eaten_ever = 0
         
 
     if len(creature_objects) > CREATURE_LIMIT:

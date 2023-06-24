@@ -39,8 +39,8 @@ class Brain(nn.Module):
         output = self.fc2(activated_hidden)
 
         # theta needs to be bounded between -180 and 180
-        # output[0] is passed through tanh to get values between -1 and 1, then scaled to be between -180 and 180
-        theta = torch.tanh(output[0]) * 180 
+        # output[0] is passed through tanh to get values between -1 and 1, it is then scaled by turn rate inside creature
+        theta = torch.tanh(output[0])
 
         # speed needs to be bounded between 0 and 1
         # output[1] is passed through sigmoid to get values between 0 and 1

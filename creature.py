@@ -117,7 +117,7 @@ class Creature():
         sight_lines = self.sight()
         if self.energy <= 0:
             self.die(creatures)
-        elif self.energy >= MAX_ENERGY:
+        elif self.energy >= MAX_ENERGY and self.num_food_eaten % 3==0:
             creatures.append(self.reproduce())
             self.energy /= 2
         self.color = COLOR_BLACK
@@ -125,7 +125,7 @@ class Creature():
         brain_input.extend(sight_lines)
         rotation, move_speed = self.brain(brain_input)
 
-        self.rotate(rotation)
+        self.rotate(rotation * MAX_TURN_RATE)
         self.move(max(0, move_speed * MAX_SPEED))
 
     def reproduce(self):
