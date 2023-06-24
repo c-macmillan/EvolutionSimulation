@@ -1,13 +1,14 @@
 import torch
 from torch import nn
 from typing import List
+from Constants import NUM_SIGHT_LINES
 
 
 class Brain(nn.Module):
     
     def __init__(self, 
-                 input_dim: int=7,
-                 hidden_dim: int=10,
+                 input_dim: int=NUM_SIGHT_LINES*2-1,
+                 hidden_dim: int=2,
                  output_dim: int=2,
                  parent_weights = None
                  ) -> None:
@@ -21,7 +22,7 @@ class Brain(nn.Module):
         # Define the layers
         self.fc1 = nn.Linear(self.input_dim, self.hidden_dim)  # Input layer
         self.fc2 = nn.Linear(self.hidden_dim, self.output_dim)  # Output layer
-        self.activation = nn.Sigmoid()  # Activation function
+        self.activation = nn.ReLU()  # Activation function
 
         if parent_weights:
             self.load_state_dict(parent_weights)
@@ -48,7 +49,7 @@ class Brain(nn.Module):
 
         return theta, speed 
     
-    def mutate(self, mutation_rate=.05, mutation_scale=0.1):
+    def mutate(self, mutation_rate=.05, mutation_scale=0.01):
         with torch.no_grad():  # We don't want these operations to be tracked by autograd
             for param in self.parameters():
                 mutation_tensor = torch.randn_like(param)  # Tensor of random numbers with the same shape as param

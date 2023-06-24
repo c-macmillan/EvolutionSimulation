@@ -56,12 +56,18 @@ while running == True:
             running = False
         elif event.type == pygame.K_ESCAPE:
             running = False
-        elif event.type ==  pygame.MOUSEWHEEL:
+        elif event.type ==  pygame.KEYDOWN:
             print("create plant")
             plant_objects.append(SpawnPlant(pygame.mouse.get_pos()))
         elif event.type == pygame.MOUSEBUTTONDOWN:
             creature_objects.append(Creature(pygame.mouse.get_pos(), parent_weights= best_creature.brain.state_dict() if best_creature else None))
             most_eaten_ever = 0
+
+    ## Spawn new creatures and plants if there aren't enough
+    while len(creature_objects) < NUM_MIN_CREATURES:
+        creature_objects.append(Creature(pygame.mouse.get_pos(), parent_weights=best_creature.brain.state_dict() if best_creature else None))
+    while len(plant_objects) < NUM_MIN_PLANTS:
+        plant_objects.append(SpawnPlant())
         
 
     if len(creature_objects) > CREATURE_LIMIT:

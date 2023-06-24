@@ -110,7 +110,6 @@ class Creature():
         self.age += 1
         self.energy -= .5
 
-        # die if too old
         brain_input = []
         self.food = plants
 
