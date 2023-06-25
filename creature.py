@@ -74,11 +74,10 @@ class Creature():
 
         if len(output) != NUM_SIGHT_LINES * 2 - 1:
             print(f"Sight lines broke there should be {NUM_SIGHT_LINES *2-1} outputs, but only {len(output)} were found")
-
         return output
             
     def get_distance_to_food(self, seen_food_idx, length):
-        nearest_distance = length
+        nearest_distance = length*2
         for idx in seen_food_idx:
             food = self.food[idx]
             distance = (food.position - self.center).magnitude()
@@ -108,7 +107,6 @@ class Creature():
 
     def update(self, plants, creatures):
         self.age += 1
-        self.energy -= .5
 
         brain_input = []
         self.food = plants
@@ -123,6 +121,7 @@ class Creature():
         is_eating = self.check_plant_collision(plants)
         brain_input.extend(sight_lines)
         rotation, move_speed = self.brain(brain_input)
+        self.energy -= move_speed
 
         self.rotate(rotation * MAX_TURN_RATE)
         self.move(max(0, move_speed * MAX_SPEED))
@@ -145,7 +144,7 @@ class Creature():
 
     def draw(self, window, draw_position=False):
         self.rect = pygame.Rect(
-            self.position[0], self.position[1], self.size, self.size)
+            self.position.x, self.position.y, self.size, self.size)
         self.rect = pygame.draw.rect(window, self.color, self.rect)
 
         if draw_position:

@@ -64,14 +64,11 @@ while running == True:
             most_eaten_ever = 0
 
     ## Spawn new creatures and plants if there aren't enough
-    while len(creature_objects) < NUM_MIN_CREATURES:
-        creature_objects.append(Creature(pygame.mouse.get_pos(), parent_weights=best_creature.brain.state_dict() if best_creature else None))
-    while len(plant_objects) < NUM_MIN_PLANTS:
+    if len(creature_objects) < NUM_MIN_CREATURES:
+        creature_objects.append(Creature(pygame.Vector2(random.randint(0, WINDOW_WIDTH), random.randint(0, WINDOW_HEIGHT)), parent_weights=best_creature.brain.state_dict() if best_creature else None))
+    if len(plant_objects) < NUM_MIN_PLANTS and len(creature_objects) < CREATURE_LIMIT:
         plant_objects.append(SpawnPlant())
-        
 
-    if len(creature_objects) > CREATURE_LIMIT:
-        creature_objects = creature_objects[-CREATURE_LIMIT:] 
     for creature in creature_objects:
         creature.update(plant_objects, creature_objects)
 
@@ -89,6 +86,8 @@ while running == True:
             max_food_eaten = creature.num_food_eaten
             creature.color = COLOR_RED
             if max_food_eaten > most_eaten_ever:
+                print(f"New best creature has eaten: {max_food_eaten}")
+                print(creature.brain.state_dict())
                 most_eaten_ever = max_food_eaten
                 best_creature = creature
         else:
@@ -110,7 +109,7 @@ while running == True:
 
     best_current_eater = font.render(f"FPS: {clock.get_fps()}", False, COLOR_RED)
     game_window.blit(best_current_eater, (10, 60))
-    clock.tick(100)
+    clock.tick(45)
 
     
     # Update the display

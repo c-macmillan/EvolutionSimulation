@@ -20,8 +20,8 @@ class Brain(nn.Module):
         self.output_dim = output_dim
 
         # Define the layers
-        self.fc1 = nn.Linear(self.input_dim, self.hidden_dim)  # Input layer
-        self.fc2 = nn.Linear(self.hidden_dim, self.output_dim)  # Output layer
+        self.fc1 = nn.Linear(self.input_dim, self.output_dim)  # Input layer
+        # self.fc2 = nn.Linear(self.hidden_dim, self.output_dim)  # Output layer
         self.activation = nn.ReLU()  # Activation function
 
         if parent_weights:
@@ -35,9 +35,9 @@ class Brain(nn.Module):
     def forward(self, 
                 inputs):
         inputs = torch.tensor(inputs, dtype=torch.float32)  
-        hidden = self.fc1(inputs)
-        activated_hidden = self.activation(hidden)
-        output = self.fc2(activated_hidden)
+        output = self.fc1(inputs)
+        #output = self.activation(hidden)
+        # output = self.fc2(activated_hidden)
 
         # theta needs to be bounded between -180 and 180
         # output[0] is passed through tanh to get values between -1 and 1, it is then scaled by turn rate inside creature
