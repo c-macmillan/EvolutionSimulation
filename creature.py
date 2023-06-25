@@ -65,12 +65,9 @@ class Creature():
             rotated_vector = rotated_vectors[i]
             eye_rect = pygame.draw.line(game_window, COLOR_BLACK, self.center, self.center + rotated_vector)
             seen_food_idx = eye_rect.collidelistall(food_rects)
-            nearest_distance = self.get_distance_to_food(seen_food_idx, SIGHT_LENGTH)
-
-            if nearest_distance < SIGHT_LENGTH: 
+            if len(seen_food_idx) > 0:
                 pygame.draw.line(game_window, COLOR_WHITE, self.center, self.center + rotated_vector)
-
-            output[i] = 1 - nearest_distance / SIGHT_LENGTH
+            output[i] = len(seen_food_idx)
 
         if len(output) != NUM_SIGHT_LINES * 2 - 1:
             print(f"Sight lines broke there should be {NUM_SIGHT_LINES *2-1} outputs, but only {len(output)} were found")
