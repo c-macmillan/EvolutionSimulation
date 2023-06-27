@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import torch
 import numpy as np
 from Constants import *
 from brain import Brain
@@ -12,12 +13,14 @@ def spawn_creature(position = None):
     else:
         position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
                 random.randint(0, WINDOW_HEIGHT-1))
-
-    return Creature(position=position)
+    num_layers = 1
+    hidden_dim = 5
+    masks = [torch.ones(hidden_dim,hidden_dim) for _ in range num_layers]
+    return Creature(position=position, masks= masks, num_layers=num_layers, hidden_dim=hidden_dim)
 
 
 class Creature():
-    def __init__(self, position, parent_weights=None):
+    def __init__(self, position, parent_weights=None, parent_masks=None, num_layers=None, hidden_dim=None, masks=None):
         
         # position variables 
         self.position = position
@@ -31,11 +34,14 @@ class Creature():
         self.num_food_eaten = 0
         self.sterile = False
         
+        self.num_layers = num_layers
+        self.hidden_dim = hidden_dim
+        self.masks = masks
         # initialize neural network
         if parent_weights:
-            self.brain = Brain(input_dim=NUM_SIGHT_LINES*2-1, parent_weights=parent_weights)
+            self.brain = Brain(input_dim=NUM_SIGHT_LINES*2-1, parent_weights=parent_weights, num_layers=num_layers, hidden_dim=hidden_dim, masks=masks)
         else:
-            self.brain = Brain(input_dim=NUM_SIGHT_LINES*2-1)
+            self.brain = Brain(input_dim=NUM_SIGHT_LINES*2-1, num_layers=num_layers, hidden_dim=hidden_dim, masks=masks)
 
         self.color = COLOR_BLACK
 
@@ -137,7 +143,7 @@ class Creature():
 
         new_creature = Creature(
             (spawn_x, spawn_y), 
-            parent_weights=parent_weights)
+            parent_weights=parent_weights, num_layers=self.num_layers, hidden_dim=self.hidden_dim, masks=self.masks)
         return new_creature
 
     def draw(self, window, draw_position=False):
