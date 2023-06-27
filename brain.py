@@ -1,7 +1,6 @@
 import torch
 from torch import nn
-from typing import List
-from Constants import NUM_SIGHT_LINES
+from Constants import * 
 
 
 class Brain(nn.Module):

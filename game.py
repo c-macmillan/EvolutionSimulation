@@ -2,12 +2,15 @@
 import pygame
 import time
 import random
+import pickle
 from plant import Plant, SpawnPlant
 from creature import Creature, spawn_creature 
 from Constants import *
 import cProfile
 
+
 random.seed(123)
+max_fps = 1000
 
 profiler = cProfile.Profile()
 profiler.enable()
@@ -54,13 +57,23 @@ while running == True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+            best_brain = best_creature.brain
+            with open("best_brain.pickle", "wb") as f:
+                pickle.dump(best_brain, f)
         elif event.type == pygame.K_ESCAPE:
             running = False
         elif event.type ==  pygame.KEYDOWN:
-            print("create plant")
-            plant_objects.append(SpawnPlant(pygame.mouse.get_pos()))
+            if event.key == pygame.K_SPACE:
+                max_fps = 30
+                new_gen_creature = Creature(pygame.mouse.get_pos(), parent_weights= best_creature.brain.state_dict() if best_creature else None)
+                new_gen_creature.sterile = True
+                creature_objects = [spawn_creature()]
+            elif event.key == pygame.K_p:
+                print("create plant")
+                plant_objects.append(SpawnPlant(pygame.mouse.get_pos()))
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            creature_objects.append(Creature(pygame.mouse.get_pos(), parent_weights= best_creature.brain.state_dict() if best_creature else None))
+            new_gen_creature = Creature(pygame.mouse.get_pos(), parent_weights= best_creature.brain.state_dict() if best_creature else None)
+            creature_objects.append(new_gen_creature)
             most_eaten_ever = 0
 
     ## Spawn new creatures and plants if there aren't enough
@@ -109,7 +122,7 @@ while running == True:
 
     best_current_eater = font.render(f"FPS: {clock.get_fps()}", False, COLOR_RED)
     game_window.blit(best_current_eater, (10, 60))
-    clock.tick(45)
+    clock.tick(max_fps)
 
     
     # Update the display

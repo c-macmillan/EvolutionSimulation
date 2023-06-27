@@ -29,6 +29,7 @@ class Creature():
         self.size = CREATURE_SIZE 
         self.age = 0
         self.num_food_eaten = 0
+        self.sterile = False
         
         # initialize neural network
         if parent_weights:
@@ -111,7 +112,7 @@ class Creature():
         sight_lines = self.sight()
         if self.energy <= 0:
             self.die(creatures)
-        elif self.energy >= MAX_ENERGY and self.num_food_eaten % 3==0:
+        elif self.energy >= MAX_ENERGY and self.num_food_eaten % 3==0 and not (self.sterile):
             creatures.append(self.reproduce())
             self.energy /= 2
         self.color = COLOR_BLACK
@@ -140,9 +141,15 @@ class Creature():
         return new_creature
 
     def draw(self, window, draw_position=False):
-        self.rect = pygame.Rect(
-            self.position.x, self.position.y, self.size, self.size)
-        self.rect = pygame.draw.rect(window, self.color, self.rect)
+        try:
+            self.rect = pygame.Rect(
+                self.position.x, self.position.y, self.size, self.size)
+            self.rect = pygame.draw.rect(window, self.color, self.rect)
+        except Exception as e:
+            print(e)
+            print(self.position)
+            print(type(self.position))
+            print(self)
 
         if draw_position:
             font = pygame.font.Font(None, 12)
