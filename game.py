@@ -1,9 +1,8 @@
 # importing libraries
 import pygame
-import time
 import random
 import pickle
-from plant import Plant, SpawnPlant
+from plant import SpawnPlant
 from creature import Creature, spawn_creature 
 from Constants import *
 import cProfile
@@ -51,6 +50,22 @@ for i in range(CREATURE_COUNT):
 best_creature = None
 most_eaten_ever = 0
 
+
+def spawn_best_creature(position=None):
+    if best_creature:
+        if not position:
+            position = pygame.math.Vector2(random.randint(0, WINDOW_WIDTH-1),
+                        random.randint(0, WINDOW_HEIGHT-1))
+        creature = Creature(position, 
+                parent_weights= best_creature.brain.state_dict(),
+                num_layers=best_creature.num_layers,
+                masks=best_creature.masks,
+                hidden_dim=best_creature.hidden_dim)
+    else:
+        creature = spawn_creature()
+    return creature
+    
+
 # Game loop
 running = True
 while running == True:
@@ -65,20 +80,21 @@ while running == True:
         elif event.type ==  pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 max_fps = 30
-                new_gen_creature = Creature(pygame.mouse.get_pos(), parent_weights= best_creature.brain.state_dict() if best_creature else None)
-                new_gen_creature.sterile = True
-                creature_objects = [spawn_creature()]
+                if best_creature:
+                    new_gen_creature = spawn_best_creature() 
+                    new_gen_creature.sterile = True
+                    creature_objects = []
             elif event.key == pygame.K_p:
                 print("create plant")
                 plant_objects.append(SpawnPlant(pygame.mouse.get_pos()))
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            new_gen_creature = Creature(pygame.mouse.get_pos(), parent_weights= best_creature.brain.state_dict() if best_creature else None)
+            new_gen_creature = spawn_best_creature(pygame.mouse.get_pos())
             creature_objects.append(new_gen_creature)
             most_eaten_ever = 0
 
     ## Spawn new creatures and plants if there aren't enough
     if len(creature_objects) < NUM_MIN_CREATURES:
-        creature_objects.append(Creature(pygame.Vector2(random.randint(0, WINDOW_WIDTH), random.randint(0, WINDOW_HEIGHT)), parent_weights=best_creature.brain.state_dict() if best_creature else None))
+        creature_objects.append(spawn_best_creature())
     if len(plant_objects) < NUM_MIN_PLANTS and len(creature_objects) < CREATURE_LIMIT:
         plant_objects.append(SpawnPlant())
 

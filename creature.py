@@ -15,7 +15,7 @@ def spawn_creature(position = None):
                 random.randint(0, WINDOW_HEIGHT-1))
     num_layers = 1
     hidden_dim = 5
-    masks = [torch.ones(hidden_dim,hidden_dim) for _ in range num_layers]
+    masks = [torch.randint(low=0, high=2, size=(hidden_dim,)) for _ in range(num_layers)]
     return Creature(position=position, masks= masks, num_layers=num_layers, hidden_dim=hidden_dim)
 
 
