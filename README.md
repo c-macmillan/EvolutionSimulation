@@ -10,14 +10,14 @@ This project simulates evolution within a basic, two-entity ecosystem.
 Plants serve as sustenance for the creatures in this environment. They are randomly scattered throughout the environment at the outset. Plants reproduce after a set period, provided they are not consumed. This can lead to clusters of plants in certain regions.
 
 <p align="center">
-  <img src="media/plant.png"/>
+  <img src="media/plant.png" style="width: 50%; height: auto;"/>
 </p>
 
 ## Creatures
 Creatures have the capacity to move and feed. Each creature possesses a limited energy reserve, and when this reserve is completely exhausted, the creature dies. Consuming plants replenishes a creature's energy. Successful creatures (those that consume a lot of plants) use their surplus energy to reproduce. Offspring are essentially clones of their parent, but with a chance of random mutation. These mutations can modify the weights and biases of a creature's neural network or even add/remove a hidden layer. This mechanism allows the propagation of the fittest creatures while maintaining the potential for evolutionary improvement in their descendants.
 
 <p align="center">
-  <img src="media/creature.png"/>
+  <img src="media/creature.png" style="width: 50%; height: auto;"/>
 </p>
 
 ## Neural Networks
