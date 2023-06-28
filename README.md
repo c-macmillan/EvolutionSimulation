@@ -40,3 +40,9 @@ On a larger scale, this evolutionary process can generate interesting emergent b
 <p align="center">
   <img src="media/sim2.gif"/>
 </p>
+
+## Future Work
+We'd love to experiment with some artificial natural selection approaches, like keeping the top five creatures in each generation and spawning the next generation using their weights.
+
+## Installation
+Create a virtual environment and install the necessary libraries in requirements.txt. Run `game.py` to start the simulation.
